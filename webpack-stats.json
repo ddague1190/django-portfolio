@@ -1,0 +1,24 @@
+{
+  "status": "done",
+  "assets": {
+    "main.bundle.js": {
+      "name": "main.bundle.js",
+      "path": "/Users/darryldague/Desktop/django-portfolio/assets/webpack_bundles/main.bundle.js",
+      "publicPath": "/static/main.bundle.js"
+    },
+    "vendor.bundle.js": {
+      "name": "vendor.bundle.js",
+      "path": "/Users/darryldague/Desktop/django-portfolio/assets/webpack_bundles/vendor.bundle.js",
+      "publicPath": "/static/vendor.bundle.js"
+    }
+  },
+  "chunks": {
+    "main": [
+      "main.bundle.js"
+    ],
+    "vendor": [
+      "vendor.bundle.js"
+    ]
+  },
+  "publicPath": "/static/"
+}

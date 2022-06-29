@@ -1,0 +1,36 @@
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="" />
+  <title>Darryl's portfolio</title>
+  {% comment %} {% render_bundle 'main' 'css' %} {% endcomment %}
+
+</head>
+
+<body class='container-md'>
+  {% include 'navbar.html' %}
+
+  <main>
+    {% block page_content %}
+    {% endblock page_content%}
+  </main>
+  {% include 'article.html' %}
+  {% include 'sidebar.html' %}
+  {% include 'footer.html' %}
+
+  {% comment %} {% if settings.DEBUG and settings.WEBPACK_LIVE_SERVER %} {% endcomment %}
+  <script src="http://localhost:9091/static/vendor.bundle.js"></script>
+  <script src="http://localhost:9091/static/main.bundle.js"></script>
+  {% comment %} {% else %}
+  {% render_bundle 'vendor' 'js' %}
+  {% render_bundle 'main' 'js' %}
+  {% endif %} {% endcomment %}
+</body>
+
+</html>

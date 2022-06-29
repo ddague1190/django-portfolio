@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block page_content %}
+
+<section class="">
+  <h1 class="heading heading--primary">About</h1>
+  <p>This is my homepage</p>
+</section>
+
+<section class="card-section">
+  <h1 class="heading heading--primary">Projects</h1>
+
+  {% for project in projects %}
+  {% include 'components/project.html' %}
+  {% endfor %}
+</section>
+<section class="card-section">
+  <h1 class="heading heading--primary">Blogs</h1>
+</section>
+{% endblock page_content %}
