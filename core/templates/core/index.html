@@ -1,19 +1,15 @@
 {% extends "base.html" %}
 {% block page_content %}
+{% include 'core/hero.html' %}
+{% include 'components/preview_grid.html' %}
 
-<section class="">
-  <h1 class="heading heading--primary">About</h1>
-  <p>This is my homepage</p>
-</section>
-
-<section class="card-section">
-  <h1 class="heading heading--primary">Projects</h1>
-
-  {% for project in projects %}
+<section class="row">
+  <h4 class="heading heading--primary">Selected Projects</h4>
+  <div class="container-fluid">
+  {% for project in project_list %}
   {% include 'components/project.html' %}
   {% endfor %}
+</div>
 </section>
-<section class="card-section">
-  <h1 class="heading heading--primary">Blogs</h1>
-</section>
+
 {% endblock page_content %}

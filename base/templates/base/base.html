@@ -16,17 +16,18 @@
 <body class='container-md'>
   {% include 'navbar.html' %}
 
+
   <main>
     {% block page_content %}
     {% endblock page_content%}
   </main>
-  {% include 'article.html' %}
-  {% include 'sidebar.html' %}
+
   {% include 'footer.html' %}
 
   {% comment %} {% if settings.DEBUG and settings.WEBPACK_LIVE_SERVER %} {% endcomment %}
   <script src="http://localhost:9091/static/vendor.bundle.js"></script>
   <script src="http://localhost:9091/static/main.bundle.js"></script>
+
   {% comment %} {% else %}
   {% render_bundle 'vendor' 'js' %}
   {% render_bundle 'main' 'js' %}

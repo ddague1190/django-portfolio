@@ -1,0 +1,33 @@
+{% load static %}
+
+<div class="grid">
+    <div class="grid__item" data-size="700x800" style="background-image: url({% static '/img/album.svg' %})">
+        <a href="{% static '/img/collage/6.jpg' %}" class="img-wrap"><img src="{% static '/img/collage/thumbs/6.jpg' %}" alt="img06" />
+            <div class="description description--grid">
+                <h3>Kinetic Advantage</h3>
+                <p>There was a tiny man sitting on the stove. He looked at me but he didn't see me. It seemed to me he was in a distant dimension.</p>
+            </div>
+        </a>
+    </div>
+    <div class="grid__item" data-size="700x800" style="background-image: url({% static '/img/album.svg' %})">
+        <a href="{% static '/img/collage/6.jpg' %}" class="img-wrap"><img src="{% static '/img/collage/thumbs/6.jpg' %}" alt="img06" />
+            <div class="description description--grid">
+                <h3>Kinetic Advantage</h3>
+                <p>There was a tiny man sitting on the stove. He looked at me but he didn't see me. It seemed to me he was in a distant dimension.</p>
+            </div>
+        </a>
+    </div>
+</div>
+<div class="preview">
+    <button class="action action--close"><i class="fa fa-times"></i><span class="text-hidden">Close</span></button>
+    <div class="description description--preview">
+    </div>
+    <div class="collage">
+        <img src="{% static '/img/collage/dummies/1.jpg' %}" alt="img01" />
+        <img src="{% static '/img/collage/dummies/2.jpg' %}" alt="img02" />
+        <img src="{% static '/img/collage/dummies/3.jpg' %}" alt="img03" />
+        <img src="{% static '/img/collage/dummies/4.jpg' %}" alt="img04" />
+    </div>
+    <button class="button button--view">View the album</button>
+</div>
+

@@ -1,0 +1,18 @@
+.logo {
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    &--medium {
+        max-height: 75px;
+    }
+    &--small {
+        max-height: 50px;
+    }
+    
+}
+
+.img-fit {
+    display: block;
+    width: auto;
+    height: 100%;
+}

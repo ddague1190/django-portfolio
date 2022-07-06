@@ -1,9 +1,13 @@
 from django.shortcuts import render
 from projects.models import Project
+from django.views.generic.list import ListView
 
-def home(request):
-    projects = Project.objects.all()
-    context = {
-        'projects': projects
-    }
-    return render(request, 'core/index.html', context)
+
+class HomePageList(ListView):
+    context_object_name = 'project_list'
+    queryset = Project.objects.filter(featured=True)
+    template_name = 'core/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context

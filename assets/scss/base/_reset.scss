@@ -3,3 +3,19 @@
     margin: 0;
     padding: 0;
  }
+
+
+ a {
+	outline: none;
+	color: red;
+	text-decoration: none;
+}
+
+a:hover,
+a:focus {
+	color: black;
+}
+
+button:focus {
+	outline: none;
+}
