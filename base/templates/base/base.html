@@ -13,16 +13,11 @@
 
 </head>
 
-<body class='container-md'>
-  {% include 'navbar.html' %}
+<body class=''>
 
+  {% block page_content %}
+  {% endblock page_content%}
 
-  <main>
-    {% block page_content %}
-    {% endblock page_content%}
-  </main>
-
-  {% include 'footer.html' %}
 
   {% comment %} {% if settings.DEBUG and settings.WEBPACK_LIVE_SERVER %} {% endcomment %}
   <script src="http://localhost:9091/static/vendor.bundle.js"></script>

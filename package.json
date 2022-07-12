@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "clean-webpack-plugin": "^4.0.0",
-    "imagesloaded": "^5.0.0",
     "masonry-layout": "^4.2.2"
   }
 }

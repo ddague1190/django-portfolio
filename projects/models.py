@@ -1,7 +1,5 @@
-from re import T
 from django.db import models
-
-
+from django.template.defaultfilters import slugify
 
 class Project(models.Model):
     featured = models.BooleanField(default=False)
@@ -13,10 +11,14 @@ class Project(models.Model):
     github_url = models.URLField(blank=True, null=True)
     website_link = models.URLField(blank=True, null=True)
     preview_image = models.ImageField(upload_to='projects')
+    slug = models.SlugField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return self.title
-
+    
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+        super(Project, self).save(*args, **kwargs)
 
 class Tech(models.Model):
     template = models.CharField(max_length=100)

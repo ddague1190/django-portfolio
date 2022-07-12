@@ -1,0 +1,331 @@
+{% extends "base.html" %} {% block page_content %}
+<section class="article-hero">
+  <img src="{{article.image}}" />
+  <p>My useFilter: Implementing multiple, linked select inputs</p>
+  <time>May 1, 2022</time>
+</section>
+
+<section class="article-intro">
+  <h1 class="visually-hidden">Intro</h1>
+  <p>
+    Effectively managing the variations of products in an e-commerce store is
+    one of the most important parts of its design. Inundating the customer with
+    too many options at once for any single product would be a bad idea.
+    <br />
+    Amazon's option selection feature hides product variants that are out of
+    stock dynamically. As you select options, the choices available are filtered
+    out. The button or dropdown for a specific variant is disabled or a visual
+    flag is shown to indicate that the option cannot be ordered.
+    <br />
+    The objective of this article is to precipitate the simple logic and filters
+    behind such a system. I will show how my first solution works. Then we can
+    analyze and improve the code.
+  </p>
+</section>
+
+<section class="article-section">
+  <h3>Setting product attributes</h3>
+  <!-- prettier-ignore -->
+  <pre>
+        <code>
+          const product = {
+
+            variants: [
+                [
+                    type: 1,
+                    packSize: 100,
+                    material: 'gold'
+                ],
+                [
+                    type: 2,
+                    packSize: 100,
+                    material: 'gold'
+                ]
+            ]
+        }
+        </code>
+    </pre>
+  <p>
+    Products in my application come in a few varieties with respect to the
+    complexity of the variations offered. They can have no options, just a
+    **Type**, a **Type and Pack**, or a **Type, Pack, and Material**. The
+    specific variety is stored in the 'whichType' variable.
+  </p>
+  <p>
+    Let's set this up. Here is some state for our Dropdown component (which - to
+    put in context - is being fed product variants on a product details page):
+  </p>
+  <pre>
+        <code>
+          const [whichType, setWhichType] = useState();
+          const [hasPackOptions, setHasPackOptions] = useState();
+          const [hasTypeOptions, setHasTypeOptions] = useState();
+          const [hasMaterialOptions, setHasMaterialOptions] = useState();
+      
+          useEffect(() => {
+              let hasPackOptions = false;
+              let hasTypeOptions = false;
+              let hasMaterialOptions = false;
+              product.variants.forEach((variant, index) => {
+                  hasTypeOptions = hasTypeOptions || variant._type != null;
+                  hasPackOptions = hasPackOptions || variant.pack != null;
+                  hasMaterialOptions = hasMaterialOptions || variant.material != null;
+              });
+              if (hasTypeOptions) setWhichType("justType");
+              if (hasPackOptions) setWhichType("typeAndPack");
+              if (hasMaterialOptions) setWhichType("typePackMaterial");
+              setHasPackOptions(hasPackOptions);
+              setHasTypeOptions(hasTypeOptions);
+              setHasMaterialOptions(hasMaterialOptions);
+          }, [product.variants]);
+        </code>
+    </pre>
+  <p>
+    We are using the the react-select package, which requires an _options_ array
+    per dropdown with the following shape
+  </p>
+  <pre>
+        <code>
+          const options = [
+          { value: 'chocolate', label: 'Chocolate' },
+          { value: 'strawberry', label: 'Strawberry' },
+          { value: 'vanilla', label: 'Vanilla' },
+        ];
+        </code>
+    </pre>
+  <p>
+    For extra feedback, I customized the styling with an additional value which
+    will be translated into a red or green dot to indicate whether the product
+    is in stock or not. For now let us leave this out.
+  </p>
+</section>
+<section class="article-section">
+  <h3>Getting the currently selected variant at the end</h3>
+  <p>
+    Our react-select setup consists of a (controlled in the React sense)
+    dropdown for each _hasPackOptions_, _hasTypeOptions_, and
+    _hasMaterialOptions_. A product can have 0 or more of these. When all of the
+    dropdowns are selected, then we show the user the current variant. (There is
+    also logic for currently selected image - which may become narrowed down to
+    1 option prior to the specific current variant becoming known. We will leave
+    detail out.)
+    <br />
+    Here is the state for this:
+  </p>
+  <pre>
+  <code>
+    // Options redetermined on each re-render
+    // Keep these vars in mind for later
+    let packOptions = {};
+    let typeOptions = {};
+    let materialOptions = {};
+
+    // Options filtered via currently set type, material, and packSize
+    const [type, setType] = useState();
+    const [material, setMaterial] = useState();
+    const [packSize, setPackSize] = useState();
+
+    // Current variant
+    const [currVariant, setCurrVariant] = useState();
+  </code>
+</pre>
+  <p>
+    Here is the useEffect triggered by type, packSize, and material (triggered
+    in turn by selection of the dropdowns). Basically, we have a updateFilters
+    object. The correct value is stepped into via the whichType key we set
+    earlier. Each filter function is applied to the product variants array. It
+    will only yield a true result when enough options have been selected.
+  </p>
+  <pre>
+    <code>
+      useEffect(() => {
+        const updateFilters = {
+            justType: ({ _type }) => {
+                return _type && type && _type === type.value;
+            },
+            typeAndPack: ({ _type, pack }) => {
+                return (
+                    _type &&
+                    type &&
+                    _type === type.value &&
+                    pack &&
+                    packSize &&
+                    pack === packSize.value
+                );
+            },
+            typePackMaterial: ({ _type, pack, material: _material }) => {
+                return (
+                    _type &&
+                    type &&
+                    _type === type.value &&
+                    pack &&
+                    packSize &&
+                    pack === packSize.value &&
+                    _material &&
+                    material &&
+                    _material === material.value
+                );
+            },
+        };
+
+        if (whichType) {
+            setCurrVariant(() => {
+                return product.variants.filter(updateFilters[whichType])[0]
+            });
+        }
+    }, [
+        type,
+        material,
+        packSize,
+        whichType,
+        product.variants,
+        setCurrVariant,
+    ]);
+    </code>
+  </pre>
+</section>
+
+<section class="article-section">
+  <h3>Showing the correct filtered variants on each select onChange event</h3>
+  <p>
+    This all works as planned but we still need to present the user with right
+    options for the level of selection they are in. If they have selected just a
+    product type, and the product has a whichType equal to 'typePackMaterial',
+    then we need to filter out products whose type is not equal to the currently
+    selected type. These will run on each re-render. For example, if a product
+    is of type 'typeAndPack', and the user has just selected a type, we collect
+    all variants that are of that type. Minor details here are too only
+    'collect' the 'packsize value' and only show one example of any single
+    'packsize value'.
+  </p>
+  <pre>
+  <code>
+    if (hasTypeOptions && !hasPackOptions) {
+      typeOptions = product.variants
+          .map((p) => p.\_type)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .map((type) => ({
+              label: type,
+              value: type
+          }));
+  }
+  if (hasTypeOptions && !hasMaterialOptions) {
+      typeOptions = product.variants
+          .map((p) => p.\_type)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .map((type) => ({
+              label: type,
+              value: type
+          }));
+      packOptions = product.variants
+          .filter((p) => type && p.\_type === type.value)
+          .map((p) => p.pack)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .map((packsize) => ({
+              label: packsize,
+              value: packsize
+          }));
+  }
+  if (hasMaterialOptions) {
+      typeOptions = product.variants
+          .map((p) => p.\_type)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .map((type) => ({
+              label: type,
+              value: type
+          }));
+      materialOptions = product.variants
+          .filter((p) => type && p.\_type === type.value)
+          .map((p) => p.material)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .map((material) => ({
+              label: material,
+              value: material
+          }));
+      packOptions = product.variants
+          .filter(
+              (p) =>
+                  type &&
+                  p.\_type === type.value &&
+                  material &&
+          p.material === material.value
+          )
+          .map((p) => p.pack)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .map((pack) => ({
+              label: pack,
+              value: pack
+      ),
+      }));
+  </code>
+</pre>
+  <p>The final result in on my page looks something like this.</p>
+  <img src="" alt="" />
+</section>
+<section class="article-section">
+  <h3>Analysis</h3>
+  <p>
+    An easy-to-grab improvement on this code would be to memoize the material
+    and pack options whenever they are determined for a type selection. This
+    would reduce the number of calculations.
+    <br />
+    In the database, these product variations are simply held as a list.
+    Although the data is normalized in the proper SQL sense, I believe the code
+    smell from all these boolean comparisons originates from non-ideal storage
+    in the database. A better data structure for the products I am presenting
+    would be lists within lists or an acyclic, disconnected graph. At least with
+    respect to parsing the data for display in the dropdowns. In other areas of
+    this e-commerce platform - even other areas within this same page - such a
+    non-linear data structure would have the opposite effect on efficiency.
+    Practically speaking, for a product with a whichType equal to
+    'typePackMaterial' we could have something like:
+  </p>
+  <pre>
+    <code>
+      const product = {
+        varants: [
+            {
+                type: 1,
+                materials: [
+                    {
+                        material: 'gold',
+                        packsizes: [1, 10, 100]
+                    }
+                    {
+                        material: 'silver',
+                        packsizes: [1, 10, 100]
+                    }
+                ]
+            },
+            {
+                type: 2,
+                materials: [
+                    {
+                        material: 'gold',
+                        packsizes: [1, 10, 100]
+                    }
+                    {
+                        material: 'silver',
+                        packsizes: [1, 10, 100]
+                    }
+                ]
+            }
+        ]
+    ]
+    }
+    </code>
+  </pre>
+  <p>
+    I herein am led to believe that the only meaningful improvement on the code
+    can come from mimicking the directional flow of the hierarchical structure
+    above in the methods used to parse the list. The simplest way would be to
+    turn the product variants list into nested lists. Here I am thinking of a
+    useReducer hook which takes in our list as its initial state. The hook would
+    re-organize the state into the easy to parse hierarchy and simply traverse
+    the tree via the the dispatch function it issues us. We can link the
+    dispatchers to the onChange property of the dropdowns. Thank you for
+    reading.
+  </p>
+</section>
+
+{% endblock %}

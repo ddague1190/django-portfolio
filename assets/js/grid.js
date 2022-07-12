@@ -1,11 +1,13 @@
 class Preview {
+    heightPreview;
+    itemHeight;
     index;
     grid;
     item;
     elements = {}
     settings = {
         minHeight: 500,
-        speed: .4,
+        speed: .5,
         easing: 'ease',
         showVisitButton: true
     };
@@ -23,7 +25,8 @@ class Preview {
         this.elements = {
             title: document.createElement('h3'),
             description: document.createElement('p'),
-            link: document.createElement('a'),
+            gitHubLink: document.createElement('a'),
+            websiteLink: document.createElement('a'),
             details: document.createElement('div'),
             loading: document.createElement('div'),
             fullImage: document.createElement('div'),
@@ -33,15 +36,15 @@ class Preview {
             previewEl: document.createElement('div')
         }
         // classify elements
-        this.elements.details.classList.add('og-details');
-        this.elements.loading.classList.add('og-loading');
-        this.elements.fullImage.classList.add('og-fullimg');
-        this.elements.closePreview.classList.add('og-close');
-        this.elements.previewInner.classList.add('og-expander-inner');
-        this.elements.previewEl.classList.add('og-expander');
+        this.elements.details.classList.add('preview-details');
+        this.elements.loading.classList.add('preview-loading');
+        this.elements.fullImage.classList.add('preview-fullimg');
+        this.elements.closePreview.classList.add('preview-close');
+        this.elements.previewInner.classList.add('preview-expander-inner');
+        this.elements.previewEl.classList.add('preview-expander');
 
         // structure elements
-        this.elements.details.append(this.elements.title, this.elements.description, this.elements.link);
+        this.elements.details.append(this.elements.title, this.elements.description, this.elements.gitHubLink, this.elements.websiteLink);
         this.elements.fullImage.append(this.elements.loading);
         this.elements.previewInner.append(this.elements.closePreview, this.elements.fullImage, this.elements.details);
         this.elements.previewEl.append(this.elements.previewInner);
@@ -50,6 +53,11 @@ class Preview {
 
         // configure close button
         this.elements.closePreview.addEventListener('click', () => { this.grid.hidePreview() });
+
+        //label links
+        this.elements.gitHubLink.innerHTML = 'GITHUB'
+        this.elements.websiteLink.innerHTML = 'ARTICLE'
+
     }
 
     getEl() {
@@ -65,15 +73,15 @@ class Preview {
         if (index) {
             this.item = this.grid.items[index]
         }
-    
-        // if already expanded remove class "og-expanded" from current item and add it to new item
+
+        // if already expanded remove class "preview-expanded" from current item and add it to new item
         if (this.grid.current !== -1) {
             this.grid.items.forEach(item => {
-                if(item.classList.contains('og-expanded')) {
-                    item.classList.remove('og-expanded');
+                if (item.classList.contains('preview-expanded')) {
+                    item.classList.remove('preview-expanded');
                 }
             })
-            this.grid.items[index].classList.add('og-expanded');
+            this.grid.items[index].classList.add('preview-expanded');
             // position the preview correctly
             this.positionPreview()
         }
@@ -84,30 +92,32 @@ class Preview {
         //update preview content
         let link = this.grid.items[index].querySelector('a');
         let data = {
-            href: link.getAttribute('href'),
+            githubhref: link.dataset.codelink,
+            websitehref: link.dataset.websitelink,
             largesrc: link.dataset.largesrc,
             title: link.dataset.title,
             description: link.dataset.description
         }
 
-
         this.elements.title.innerHTML = data.title;
         this.elements.description.innerHTML = data.description;
-        this.elements.link.href = data.href;
+        this.elements.gitHubLink.href = data.githubhref;
+        this.elements.websiteLink.href = data.websitehref;
 
-        if (this.elements.fullImage.querySelector('img')) {
-            this.elements.fullImage.removeChild('img');
+        let prev_image = this.elements.fullImage.querySelector('img');
+        if (prev_image) {
+            this.elements.fullImage.removeChild(prev_image);
         }
-        if (this.elements.fullImage.style.display === 'block') {
-            this.elements.loading.classList.add('og-loading--active');
+        let tmp = this.elements.previewEl.querySelector(".preview-fullimg")
+        let visible = tmp.getBoundingClientRect().width > 0;
+        if (visible) {
             let newImg = document.createElement('img');
-            newImg('load', () => {
-                this.elements.loading.classList.remove('og-loading--active');
+            newImg.addEventListener('load', () => {
+                this.elements.loading.remove();
                 let new_source = this.item.querySelector('a').getAttribute('src');
-                let old_image = this.elements.fullImage.querySelector('img');
-                this.elements.fullImage.removeChild(old_image);
                 this.elements.fullImage.append(newImg);
-            }).setAttribute('src', data.largesrc);
+            })
+            newImg.setAttribute('src', data.largesrc)
         }
     }
     open() {
@@ -122,11 +132,19 @@ class Preview {
     close() {
         const onEndFn = () => {
             this.item.removeEventListener('transitionend', onEndFn);
-            this.item.classList.remove('og-expanded');
+            this.grid.items.forEach(item => {
+                if (item.classList.contains('preview-expanded')) {
+                    item.classList.remove('preview-expanded');
+                }
+            })
             this.elements.previewEl.remove();
         }
+        let prev_image = this.elements.fullImage.querySelector('img');
         setTimeout(() => {
-            this.elements.previewEl.style.height = 0;
+            if (prev_image) {
+                prev_image.classList.add('fade-out');
+            }
+            this.elements.previewEl.style.height = 0 + 'px';
             const expandedItem = this.grid.items[this.index];
             expandedItem.addEventListener('transitionend', onEndFn);
             expandedItem.style.height = this.grid.itemsData[this.index].height + 'px';
@@ -142,53 +160,67 @@ class Preview {
             heightPreview = this.settings.minHeight;
             itemHeight = this.settings.minHeight + this.grid.itemsData[this.index].height + this.grid.marginExpanded
         }
-        return [heightPreview, itemHeight]
+        this.heightPreview = heightPreview;
+        this.itemHeight = itemHeight;
     }
 
     setHeights() {
         const onEndFn = () => {
             this.item.removeEventListener('transitionend', onEndFn);
-            this.item.classList.add('og-expanded');
+            this.item.classList.add('preview-expanded');
         }
-        let [height, itemHeight] = this.calcHeight();
-        this.elements.previewEl.style.height = height + 'px';
-        this.item.style.height = itemHeight + 'px';
+        this.calcHeight();
+        this.elements.previewEl.style.height = this.heightPreview + 'px';
+        this.item.style.height = this.itemHeight + 'px';
         this.item.addEventListener('transitionend', onEndFn);
     }
 
     positionPreview() {
+
         // scroll page
-        // case 1 : preview height + item height fits in window´s height
         // case 2 : preview height + item height does not fit in window´s height and preview height is smaller than window´s height
         // case 3 : preview height + item height does not fit in window´s height and preview height is bigger than window´s height
         const position = this.grid.itemsData[this.index].top;
         const previewOffsetT = this.elements.previewEl.offsetTop - this.grid.scrollExtra;
-        let [height, itemHeight] = this.calcHeight();
-        const scrollVal = (height + this.grid.itemsData[this.index].height + this.grid.marginExpanded) <= this.grid.winsize.height ? previewOffsetT - (this.grid.winsize.height - height) : previewOffsetT;
+        let scrollVal;
+
+        // case 1 : preview height + item height fits in window´s height
+        if (this.heightPreview + this.grid.itemsData[this.index].height + this.grid.marginExpanded <= this.grid.winsize.height) {
+            scrollVal = position;
+        } else {
+            if (this.heightPreview < this.grid.winsize.height) {
+                scrollVal = previewOffsetT - (this.grid.winsize.height - this.heightPreview)
+            } else {
+                scrollVal = previewOffsetT
+            }
+        }
+        let hero = document.querySelector('.hero-wrapper')
+
+        let h = hero.getBoundingClientRect().height
+
         window.scroll({
-            top: scrollVal,
-            left: 0,
-            behavior: 'smooth'
+            top: scrollVal+h,
+            behavior: "smooth"
         });
     }
 }
 
 
-export class Grid {
+export default class Grid {
     previewInstance = null;
     grid;
     items;
     itemsData = [];
     body;
     current = -1;
-    previewPos = -1;
     scrollExtra = 0;
+    previewPos = -1;
     winsize;
     marginExpanded = 0;
     showingPreview = false;
 
     constructor() {
-        this.grid = document.getElementById('og-grid');
+        this.grid = document.getElementById('preview-grid');
         this.items = [...this.grid.getElementsByTagName('li')];
         this.body = document.body;
         this.onImagesLoaded();
@@ -246,7 +278,7 @@ export class Grid {
         this.initItemsEvents();
 
         // reset on window resize
-        window.addEventListener('resize', ()=>{
+        window.addEventListener('resize', () => {
             this.scrollExtra = 0;
             this.previewPos = -1;
             this.saveItemInfo()
@@ -254,9 +286,9 @@ export class Grid {
             if (this.showingPreview) {
                 this.hidePreview();
             }
-            this.items.forEach(item=>{
-                if(item.classList.contains('og-expanded')) {
-                    item.classList.remove('og-expanded');
+            this.items.forEach(item => {
+                if (item.classList.contains('preview-expanded')) {
+                    item.classList.remove('preview-expanded');
                 }
             })
         })
@@ -292,10 +324,10 @@ export class Grid {
                 this.previewInstance.update(index)
                 return false;
             }
-        } 
+        }
 
         // update variables
-        this.current = index;
+        // this.current = index;
         this.previewPos = position;
         this.showingPreview = true;
         // initialize new preview for clicked item
@@ -308,6 +340,5 @@ export class Grid {
         this.previewInstance.close();
         this.previewInstance = null;
         this.current = -1;
-
     }
 }

@@ -1,0 +1,66 @@
+@import "../abstracts/variables";
+
+.hero-wrapper {
+    background-color:  #FFFDFE;
+    position: relative;
+    padding-inline: 3rem;
+}
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+.js-revealing-hero {
+    padding-block: 20rem;
+    padding-inline: 3rem;
+    position: sticky; // bottom value will be set using JS
+    min-height: 100vh;
+    --revealing-hero-overlay-opacity: 1; // overlay layer opacity - modified using JS
+
+    &::after {
+        // overlay layer
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        pointer-events: none;
+        background-color: black;
+        opacity: var(--revealing-hero-overlay-opacity);
+    }
+}
+
+
+
+.projects-wrapper {
+    background-color: #4599fe;
+    & h1 {
+        position: absolute;
+        top: 6rem;
+        font-size: 12rem;
+        color: rgba(#FFFDFE, 0.1);
+    }
+}
+.articles-wrapper {
+    background-color: #031e49;
+    & h1 {
+        position: absolute;
+        top: 6rem;
+        font-size: 12rem;
+        color: rgba(#FFFDFE, 0.1);
+
+    }
+}
+.contact-wrapper {
+    background-color: black;
+    & h1 {
+        position: absolute;
+        top: 6rem;
+        font-size: 12rem;
+        color: rgba(#FFFDFE, 0.1);
+
+    }
+}

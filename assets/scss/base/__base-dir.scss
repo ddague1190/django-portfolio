@@ -1,3 +1,8 @@
 @import "typography";
 @import "reset";
 @import "image-sizing";
+
+body {
+    width: 100vw;
+    overflow-x: hidden;
+}

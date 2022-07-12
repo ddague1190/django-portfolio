@@ -1,15 +1,26 @@
 {% extends "base.html" %}
 {% block page_content %}
-{% include 'core/hero.html' %}
-{% include 'components/preview_grid.html' %}
-
-<section class="row">
-  <h4 class="heading heading--primary">Selected Projects</h4>
-  <div class="container-fluid">
-  {% for project in project_list %}
-  {% include 'components/project.html' %}
-  {% endfor %}
-</div>
+<section class="zindex-4 hero-wrapper">
+  {% include 'core/hero.html' %}
 </section>
+
+<section class="zindex-3 js-revealing-hero projects-wrapper" data-theme="dark">
+  <h1>Projects</h1>
+  {% include 'components/preview_grid.html' %}
+  
+</section>
+
+<section class="zindex-2 js-revealing-hero articles-wrapper" data-theme="dark">
+  <h1>Articles</h1>
+
+  {% include 'components/preview_grid.html' %}
+</section>
+
+<section class="zindex-1 js-revealing-hero contact-wrapper" data-theme="dark">
+  <h1>Contact</h1>
+
+</section>
+
+
 
 {% endblock page_content %}
